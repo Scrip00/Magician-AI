@@ -10,10 +10,12 @@ import com.scrip0.magiciandatasetapp.util.MicUtil;
 import java.awt.Color;
 import java.awt.HeadlessException;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -22,11 +24,14 @@ import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.DataLine.Info;
+import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -103,7 +108,24 @@ public class DataFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
-        
+        try {
+            CountDownLatch syncLatch = new CountDownLatch(1);
+            AudioInputStream stream = AudioSystem.getAudioInputStream(new File("C:\\Users\\Scrip0\\Desktop\\lol.mp3"));
+            Clip clip = AudioSystem.getClip();
+
+            clip.addLineListener(e -> {
+                if (e.getType() == LineEvent.Type.STOP) {
+                    syncLatch.countDown();
+                }
+            });
+
+            clip.open(stream);
+            clip.start();
+            syncLatch.await();
+            System.out.println("Finally");
+        } catch (Exception ex) {
+            Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnStartMouseClicked
 
     /**
@@ -158,7 +180,7 @@ public class DataFrame extends javax.swing.JFrame {
                     }
                 }
             };
-            
+
             scheduler.scheduleAtFixedRate(r, 0, 1000, TimeUnit.MILLISECONDS);
         }
 
