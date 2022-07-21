@@ -75,14 +75,23 @@ public class MicUtil {
     }
 
     private void delay(Long length) {
-         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-         Runnable r = new Runnable() {
-             @Override
-             public void run() {
-                  stopRecording();
-             }
-         };
-                 
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                stopRecording();
+            }
+        };
+
         scheduler.schedule(r, length + 300, TimeUnit.MILLISECONDS);
+    }
+
+    public boolean isMicAvailable() {
+        DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
+        if (!AudioSystem.isLineSupported(info)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

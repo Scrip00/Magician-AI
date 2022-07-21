@@ -124,6 +124,7 @@ public class DataFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new DataFrame().setVisible(true);
             }
@@ -158,11 +159,23 @@ public class DataFrame extends javax.swing.JFrame {
             }).start();
         }
 
+        if (isMicAvailable()) {
+            labelMic.setText("Microphone is available");
+            labelMic.setForeground(Color.GREEN);
+        } else {
+            labelMic.setText("Microphone is not available");
+            labelMic.setForeground(Color.RED);
+        }
     }
 
     private boolean isCamAvailable() {
         CamUtil c = new CamUtil();
         return c.isCamAvailable();
+    }
+
+    private boolean isMicAvailable() {
+        MicUtil m = new MicUtil();
+        return m.isMicAvailable();
     }
 
 
