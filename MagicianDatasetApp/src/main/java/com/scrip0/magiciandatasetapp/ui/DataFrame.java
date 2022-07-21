@@ -6,14 +6,29 @@
 package com.scrip0.magiciandatasetapp.ui;
 
 import com.scrip0.magiciandatasetapp.util.CamUtil;
+import com.scrip0.magiciandatasetapp.util.MicUtil;
 import java.awt.Color;
 import java.awt.HeadlessException;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.DataLine.Info;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.TargetDataLine;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 /**
  *
@@ -69,6 +84,11 @@ public class DataFrame extends javax.swing.JFrame {
         btnStart.setText("Start");
         btnStart.setFocusPainted(false);
         btnStart.setFocusable(false);
+        btnStart.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnStartMouseClicked(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -78,6 +98,11 @@ public class DataFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
+        MicUtil mu = new MicUtil();
+        mu.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
+    }//GEN-LAST:event_btnStartMouseClicked
 
     /**
      * @param args the command line arguments
