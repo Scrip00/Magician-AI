@@ -14,6 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
@@ -100,8 +103,7 @@ public class DataFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
-        MicUtil mu = new MicUtil();
-        mu.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
+        
     }//GEN-LAST:event_btnStartMouseClicked
 
     /**
@@ -139,24 +141,25 @@ public class DataFrame extends javax.swing.JFrame {
     }
 
     private void setupUI() {
-        if (isCamAvailable()) {
+        if (!isCamAvailable()) {
             labelCam.setText("Camera is available");
             labelCam.setForeground(Color.GREEN);
         } else {
-            new Thread(() -> {
-                while (true) {
+            labelCam.setText("Camera is not available");
+            labelCam.setForeground(Color.RED);
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
                     if (isCamAvailable()) {
                         labelCam.setText("Camera is available");
                         labelCam.setForeground(Color.GREEN);
-                        Thread.currentThread().interrupt();
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        Thread.currentThread().stop();
                     }
                 }
-            }).start();
+            };
+            
+            scheduler.scheduleAtFixedRate(r, 0, 1000, TimeUnit.MILLISECONDS);
         }
 
         if (isMicAvailable()) {
