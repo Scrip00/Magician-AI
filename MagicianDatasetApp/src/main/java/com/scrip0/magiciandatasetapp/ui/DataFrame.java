@@ -108,24 +108,26 @@ public class DataFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
-        try {
-            CountDownLatch syncLatch = new CountDownLatch(1);
-            AudioInputStream stream = AudioSystem.getAudioInputStream(new File("C:\\Users\\Scrip0\\Desktop\\lol.mp3"));
-            Clip clip = AudioSystem.getClip();
-
-            clip.addLineListener(e -> {
-                if (e.getType() == LineEvent.Type.STOP) {
-                    syncLatch.countDown();
-                }
-            });
-
-            clip.open(stream);
-            clip.start();
-            syncLatch.await();
-            System.out.println("Finally");
-        } catch (Exception ex) {
-            Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            CountDownLatch syncLatch = new CountDownLatch(1);
+//            AudioInputStream stream = AudioSystem.getAudioInputStream(new File("C:\\Users\\Scrip0\\Desktop\\lol.mp3"));
+//            Clip clip = AudioSystem.getClip();
+//
+//            clip.addLineListener(e -> {
+//                if (e.getType() == LineEvent.Type.STOP) {
+//                    syncLatch.countDown();
+//                }
+//            });
+//
+//            clip.open(stream);
+//            clip.start();
+//            syncLatch.await();
+//            System.out.println("Finally");
+//        } catch (Exception ex) {
+//            Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+        CamUtil c = new CamUtil();
+        c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
     }//GEN-LAST:event_btnStartMouseClicked
 
     /**
