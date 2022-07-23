@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.scrip0.magiciandatasetapp.ui;
+package ui;
 
-import com.scrip0.magiciandatasetapp.util.CamUtil;
-import com.scrip0.magiciandatasetapp.util.MicUtil;
+import util.CamUtil;
+import util.MicUtil;
 import java.awt.Color;
 import java.awt.HeadlessException;
 import java.io.ByteArrayInputStream;
@@ -62,10 +62,18 @@ public class DataFrame extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        panelCard = new javax.swing.JPanel();
+        labelCard = new javax.swing.JLabel();
         panelStart = new javax.swing.JPanel();
         labelMic = new javax.swing.JLabel();
         labelCam = new javax.swing.JLabel();
         btnStart = new javax.swing.JButton();
+
+        panelCard.setLayout(new java.awt.GridBagLayout());
+
+        labelCard.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
+        labelCard.setText("Your card");
+        panelCard.add(labelCard, new java.awt.GridBagConstraints());
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(850, 500));
@@ -126,8 +134,11 @@ public class DataFrame extends javax.swing.JFrame {
 //        } catch (Exception ex) {
 //            Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-        CamUtil c = new CamUtil();
-        c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
+//        CamUtil c = new CamUtil();
+//        c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
+        startRecordingDataset();
+//        MicUtil m = new MicUtil();
+//        m.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
     }//GEN-LAST:event_btnStartMouseClicked
 
     /**
@@ -205,11 +216,50 @@ public class DataFrame extends javax.swing.JFrame {
         return m.isMicAvailable();
     }
 
+    private void startRecordingDataset() {
+        panelStart.setVisible(false);
+        panelCard.setVisible(true);
+        this.setContentPane(panelCard);
+        CamUtil c = new CamUtil();
+        MicUtil m = new MicUtil();
+
+        String[] ranks = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"};
+        String[] suits = new String[]{"clubs", "diamonds", "hearts", "spades"};
+
+        for (int i = 0; i < ranks.length; i++) {
+            try {
+                labelCard.setText(ranks[i]);
+                CountDownLatch syncLatch = new CountDownLatch(1);
+                AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks[i] + ".wav"));
+                Clip clip = AudioSystem.getClip();
+
+                clip.addLineListener(e -> {
+                    if (e.getType() == LineEvent.Type.STOP) {
+                        syncLatch.countDown();
+                    }
+                });
+
+                clip.open(stream);
+                clip.start();
+                syncLatch.await();
+
+                c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
+                m.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
+                Thread.sleep(2000);
+            } catch (Exception ex) {
+                Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            c.closeCam();
+        }
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnStart;
     private javax.swing.JLabel labelCam;
+    private javax.swing.JLabel labelCard;
     private javax.swing.JLabel labelMic;
+    private javax.swing.JPanel panelCard;
     private javax.swing.JPanel panelStart;
     // End of variables declaration//GEN-END:variables
 }

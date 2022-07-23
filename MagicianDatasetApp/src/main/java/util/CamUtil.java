@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.scrip0.magiciandatasetapp.util;
+package util;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamDiscoveryEvent;
@@ -58,9 +58,11 @@ public class CamUtil implements WebcamDiscoveryListener {
     }
 
     public void startRecording(String path, Long length, int fps) {
-        cam = Webcam.getDefault();
-        cam.setViewSize(new Dimension(176, 144)); // 320x240
-        cam.open();
+        if (cam == null || !cam.isOpen()) {
+            cam = Webcam.getDefault();
+            cam.setViewSize(new Dimension(176, 144)); // 320x240
+            cam.open();
+        }
 
         double frameTime = 1000 / fps;
 
@@ -84,14 +86,9 @@ public class CamUtil implements WebcamDiscoveryListener {
         for (int i = 0; i < (length / frameTime); i++) {
             scheduler.schedule(frameRunnable, (long) (i * frameTime), TimeUnit.MILLISECONDS);
         }
+    }
 
-        Runnable camStop = new Runnable() {
-            @Override
-            public void run() {
-                cam.close();
-            }
-        };
-
-        scheduler.schedule(camStop, length + 100L, TimeUnit.MILLISECONDS);
+    public void closeCam() {
+        cam.close();
     }
 }
