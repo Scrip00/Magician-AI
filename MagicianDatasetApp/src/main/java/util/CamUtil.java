@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import ui.DataFrame;
 
 /**
  *
@@ -60,32 +61,33 @@ public class CamUtil implements WebcamDiscoveryListener {
     public void startRecording(String path, Long length, int fps) {
         if (cam == null || !cam.isOpen()) {
             cam = Webcam.getDefault();
-            cam.setViewSize(new Dimension(176, 144)); // 320x240
+            cam.setViewSize(new Dimension(640, 480)); // 320x240 640x480 176x144
             cam.open();
         }
 
-        double frameTime = 1000 / fps;
+        new Thread(() -> {
+            int c = 1;
+            int frames = (int) (length / (1000 / fps));
+            try {
+                while (c <= frames) {
+                    long timeBefore = System.currentTimeMillis();
+                    Image image = cam.getImage();
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        Runnable frameRunnable = new Runnable() {
-            @Override
-            public void run() {
-                Image image = cam.getImage();
-                new Thread(() -> {
-                    try {
-                        ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + c + ".png"));
-                        c++;
-                    } catch (IOException ex) {
-                        Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + c + ".png"));
+
+                    long elapsed = System.currentTimeMillis() - timeBefore;
+                    long delay = 1000 / fps - elapsed;
+                    if (delay < 0) {
+                        delay = 0;
                     }
-                }).start();
+                    Thread.sleep(delay);
+                    c++;
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
-        };
 
-        c = 1;
-        for (int i = 0; i < (length / frameTime); i++) {
-            scheduler.schedule(frameRunnable, (long) (i * frameTime), TimeUnit.MILLISECONDS);
-        }
+        }).start();
     }
 
     public void closeCam() {
