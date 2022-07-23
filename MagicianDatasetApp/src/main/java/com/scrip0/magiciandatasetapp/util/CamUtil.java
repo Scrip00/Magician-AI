@@ -62,46 +62,36 @@ public class CamUtil implements WebcamDiscoveryListener {
         cam.setViewSize(new Dimension(176, 144)); // 320x240
         cam.open();
 
-        Thread thread = new Thread(() -> {
-            c = 1;
-            while (true) {
-                try {
-                    Image image = cam.getImage();
-                    new Thread(() -> {
-                        try {
-                            ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + c + ".png"));
-                        } catch (IOException ex) {
-                            Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }).start();
+        double frameTime = 1000 / fps;
 
-                    Thread.sleep(1000 / fps);
-                    c++;
-                } catch (Exception ex) {
-                    Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        camThread = thread;
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        Runnable r = new Runnable() {
+        Runnable frameRunnable = new Runnable() {
             @Override
             public void run() {
-                camThread.stop();
-                camThread.suspend();
-                camThread.interrupt();
-                
-                try {
-                    camThread.join();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                System.out.println(camThread.isAlive());
+                Image image = cam.getImage();
+                new Thread(() -> {
+                    try {
+                        ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + c + ".png"));
+                        c++;
+                    } catch (IOException ex) {
+                        Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }).start();
+            }
+        };
+
+        c = 1;
+        for (int i = 0; i < (length / frameTime); i++) {
+            scheduler.schedule(frameRunnable, (long) (i * frameTime), TimeUnit.MILLISECONDS);
+        }
+
+        Runnable camStop = new Runnable() {
+            @Override
+            public void run() {
                 cam.close();
             }
         };
 
-        thread.start();
-        scheduler.schedule(r, length, TimeUnit.MILLISECONDS);
+        scheduler.schedule(camStop, length + 100L, TimeUnit.MILLISECONDS);
     }
 }
