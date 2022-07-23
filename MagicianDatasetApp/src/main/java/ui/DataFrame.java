@@ -15,6 +15,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,6 +55,18 @@ public class DataFrame extends javax.swing.JFrame {
     public DataFrame() {
         initComponents();
         setupUI();
+        setupDB();
+    }
+
+    private void setupDB() {
+        String[] ranks = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"};
+        String[] suits = new String[]{"clubs", "diamonds", "hearts", "spades"};
+        for (String rank : ranks) {
+            cbRanks.addItem(rank);
+        }
+        for (String suit : suits) {
+            cbSuits.addItem(suit);
+        }
     }
 
     /**
@@ -69,6 +85,9 @@ public class DataFrame extends javax.swing.JFrame {
         labelMic = new javax.swing.JLabel();
         labelCam = new javax.swing.JLabel();
         btnStart = new javax.swing.JButton();
+        cbRanks = new javax.swing.JComboBox<>();
+        cbSuits = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
 
         panelCard.setLayout(new java.awt.GridBagLayout());
 
@@ -86,15 +105,16 @@ public class DataFrame extends javax.swing.JFrame {
         labelMic.setText("Mic");
         labelMic.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         panelStart.add(labelMic, gridBagConstraints);
 
         labelCam.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         labelCam.setText("Cam");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         panelStart.add(labelCam, gridBagConstraints);
 
@@ -107,9 +127,26 @@ public class DataFrame extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
         panelStart.add(btnStart, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 20);
+        panelStart.add(cbRanks, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
+        panelStart.add(cbSuits, gridBagConstraints);
+
+        jLabel1.setText("Choose your card");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 20);
+        panelStart.add(jLabel1, gridBagConstraints);
 
         getContentPane().add(panelStart);
 
@@ -117,29 +154,7 @@ public class DataFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
-//        try {
-//            CountDownLatch syncLatch = new CountDownLatch(1);
-//            AudioInputStream stream = AudioSystem.getAudioInputStream(new File("C:\\Users\\Scrip0\\Desktop\\lol.mp3"));
-//            Clip clip = AudioSystem.getClip();
-//
-//            clip.addLineListener(e -> {
-//                if (e.getType() == LineEvent.Type.STOP) {
-//                    syncLatch.countDown();
-//                }
-//            });
-//
-//            clip.open(stream);
-//            clip.start();
-//            syncLatch.await();
-//            System.out.println("Finally");
-//        } catch (Exception ex) {
-//            Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        CamUtil c = new CamUtil();
-//        c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
-        startRecordingDataset();
-//        MicUtil m = new MicUtil();
-//        m.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
+        startRecordingDataset(new String[]{cbRanks.getSelectedItem().toString(), cbSuits.getSelectedItem().toString()});
     }//GEN-LAST:event_btnStartMouseClicked
 
     /**
@@ -217,8 +232,19 @@ public class DataFrame extends javax.swing.JFrame {
         return m.isMicAvailable();
     }
 
-    private void startRecordingDataset() {
+    private void startRecordingDataset(String[] falseStrings) {
+        String pathTrue = System.getProperty("user.dir") + "\\Data\\True";
+        String pathFalse = System.getProperty("user.dir") + "\\Data\\False";
+        if (!new File(pathTrue).exists()) {
+            new File(pathTrue).mkdirs();
+            new File(pathFalse).mkdirs();
+        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd_MM_HH_mm_ss");
+
         new Thread(() -> {
+            long delay = 2000L;
+
             SwingUtilities.invokeLater(() -> {
                 panelStart.setVisible(false);
                 panelCard.setVisible(true);
@@ -228,14 +254,13 @@ public class DataFrame extends javax.swing.JFrame {
             CamUtil c = new CamUtil();
             MicUtil m = new MicUtil();
 
-            String[] ranks = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"};
-            String[] suits = new String[]{"clubs", "diamonds", "hearts", "spades"};
+            String[] ranks_and_suits = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace", "clubs", "diamonds", "hearts", "spades"};
 
-            for (int i = 0; i < ranks.length; i++) {
+            for (int i = 0; i < ranks_and_suits.length; i++) {
                 try {
-                    labelCard.setText(ranks[i]);
+                    labelCard.setText(ranks_and_suits[i]);
                     CountDownLatch syncLatch = new CountDownLatch(1);
-                    AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks[i] + ".wav"));
+                    AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks_and_suits[i] + ".wav"));
                     Clip clip = AudioSystem.getClip();
 
                     clip.addLineListener(e -> {
@@ -248,20 +273,41 @@ public class DataFrame extends javax.swing.JFrame {
                     clip.start();
                     syncLatch.await();
 
-                    c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
-                    m.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
-                    Thread.sleep(2000);
+                    String path = System.getProperty("user.dir") + "\\Data";
+
+                    if (ranks_and_suits[i].toLowerCase().equals(falseStrings[0].toLowerCase()) || ranks_and_suits[i].toLowerCase().equals(falseStrings[1].toLowerCase())) {
+                        path += "\\False";
+                    } else {
+                        path += "\\True";
+                    }
+
+                    String name = formatter.format(new Date()) + "_" + ranks_and_suits[i];
+
+                    path += "\\" + name;
+
+                    File f = new File(path);
+                    if (!f.exists()) {
+                        f.mkdirs();
+                    }
+
+                    c.startRecording(path, delay, 15);
+                    m.startRecording(path + "\\" + name + ".mp3", delay);
+                    Thread.sleep(delay);
                 } catch (Exception ex) {
                     Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             c.closeCam();
+            this.dispose();
         }).start();
     }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnStart;
+    private javax.swing.JComboBox<String> cbRanks;
+    private javax.swing.JComboBox<String> cbSuits;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel labelCam;
     private javax.swing.JLabel labelCard;
     private javax.swing.JLabel labelMic;
