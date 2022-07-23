@@ -81,6 +81,9 @@ public class DataFrame extends javax.swing.JFrame {
 
         panelCard = new javax.swing.JPanel();
         labelCard = new javax.swing.JLabel();
+        panelFinal = new javax.swing.JPanel();
+        btnRestart = new javax.swing.JButton();
+        btnExit = new javax.swing.JButton();
         panelStart = new javax.swing.JPanel();
         labelMic = new javax.swing.JLabel();
         labelCam = new javax.swing.JLabel();
@@ -95,8 +98,35 @@ public class DataFrame extends javax.swing.JFrame {
         labelCard.setText("Your card");
         panelCard.add(labelCard, new java.awt.GridBagConstraints());
 
+        panelFinal.setLayout(new java.awt.GridBagLayout());
+
+        btnRestart.setText("Restart");
+        btnRestart.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnRestartMouseClicked(evt);
+            }
+        });
+        panelFinal.add(btnRestart, new java.awt.GridBagConstraints());
+
+        btnExit.setText("Exit");
+        btnExit.setToolTipText("");
+        btnExit.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnExitMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(30, 0, 0, 0);
+        panelFinal.add(btnExit, gridBagConstraints);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(850, 500));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
         panelStart.setLayout(new java.awt.GridBagLayout());
@@ -131,12 +161,14 @@ public class DataFrame extends javax.swing.JFrame {
         gridBagConstraints.gridy = 3;
         panelStart.add(btnStart, gridBagConstraints);
 
+        cbRanks.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 20);
         panelStart.add(cbRanks, gridBagConstraints);
 
+        cbSuits.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
@@ -156,6 +188,20 @@ public class DataFrame extends javax.swing.JFrame {
     private void btnStartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnStartMouseClicked
         startRecordingDataset(new String[]{cbRanks.getSelectedItem().toString(), cbSuits.getSelectedItem().toString()});
     }//GEN-LAST:event_btnStartMouseClicked
+
+    private void btnRestartMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnRestartMouseClicked
+        panelFinal.setVisible(false);
+        panelStart.setVisible(true);
+        this.setContentPane(panelStart);
+    }//GEN-LAST:event_btnRestartMouseClicked
+
+    private void btnExitMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnExitMouseClicked
+        exit();
+    }//GEN-LAST:event_btnExitMouseClicked
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        exit();
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -182,6 +228,12 @@ public class DataFrame extends javax.swing.JFrame {
                 new DataFrame().setVisible(true);
             }
         });
+    }
+
+    private void exit() {
+        CamUtil c = new CamUtil();
+        c.closeCam();
+        this.dispose();
     }
 
     public DataFrame(JButton btnStart, JLabel labelCam, JLabel labelMic, JPanel panelStart) throws HeadlessException {
@@ -290,20 +342,26 @@ public class DataFrame extends javax.swing.JFrame {
                         f.mkdirs();
                     }
 
-                    c.startRecording(path, delay, 15);
                     m.startRecording(path + "\\" + name + ".mp3", delay);
+                    c.startRecording(path, delay, 15);
+
                     Thread.sleep(delay);
                 } catch (Exception ex) {
                     Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            c.closeCam();
-            this.dispose();
+            SwingUtilities.invokeLater(() -> {
+                panelCard.setVisible(false);
+                panelFinal.setVisible(true);
+                this.setContentPane(panelFinal);
+            });
         }).start();
     }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnRestart;
     private javax.swing.JButton btnStart;
     private javax.swing.JComboBox<String> cbRanks;
     private javax.swing.JComboBox<String> cbSuits;
@@ -312,6 +370,7 @@ public class DataFrame extends javax.swing.JFrame {
     private javax.swing.JLabel labelCard;
     private javax.swing.JLabel labelMic;
     private javax.swing.JPanel panelCard;
+    private javax.swing.JPanel panelFinal;
     private javax.swing.JPanel panelStart;
     // End of variables declaration//GEN-END:variables
 }

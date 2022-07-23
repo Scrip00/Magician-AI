@@ -61,7 +61,7 @@ public class CamUtil implements WebcamDiscoveryListener {
     public void startRecording(String path, Long length, int fps) {
         if (cam == null || !cam.isOpen()) {
             cam = Webcam.getDefault();
-            cam.setViewSize(new Dimension(640, 480)); // 320x240 640x480 176x144
+            cam.setViewSize(new Dimension(320, 240)); // 320x240 640x480 176x144
             cam.open();
         }
 
@@ -91,6 +91,11 @@ public class CamUtil implements WebcamDiscoveryListener {
     }
 
     public void closeCam() {
-        cam.close();
+        if (cam == null) {
+            cam = Webcam.getDefault();
+        }
+        if (cam.isOpen()) {
+            cam.close();
+        }
     }
 }
