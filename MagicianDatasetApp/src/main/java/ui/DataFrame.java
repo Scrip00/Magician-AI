@@ -35,6 +35,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -217,40 +218,45 @@ public class DataFrame extends javax.swing.JFrame {
     }
 
     private void startRecordingDataset() {
-        panelStart.setVisible(false);
-        panelCard.setVisible(true);
-        this.setContentPane(panelCard);
-        CamUtil c = new CamUtil();
-        MicUtil m = new MicUtil();
+        new Thread(() -> {
+            SwingUtilities.invokeLater(() -> {
+                panelStart.setVisible(false);
+                panelCard.setVisible(true);
+                this.setContentPane(panelCard);
+            });
 
-        String[] ranks = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"};
-        String[] suits = new String[]{"clubs", "diamonds", "hearts", "spades"};
+            CamUtil c = new CamUtil();
+            MicUtil m = new MicUtil();
 
-        for (int i = 0; i < ranks.length; i++) {
-            try {
-                labelCard.setText(ranks[i]);
-                CountDownLatch syncLatch = new CountDownLatch(1);
-                AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks[i] + ".wav"));
-                Clip clip = AudioSystem.getClip();
+            String[] ranks = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace"};
+            String[] suits = new String[]{"clubs", "diamonds", "hearts", "spades"};
 
-                clip.addLineListener(e -> {
-                    if (e.getType() == LineEvent.Type.STOP) {
-                        syncLatch.countDown();
-                    }
-                });
+            for (int i = 0; i < ranks.length; i++) {
+                try {
+                    labelCard.setText(ranks[i]);
+                    CountDownLatch syncLatch = new CountDownLatch(1);
+                    AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks[i] + ".wav"));
+                    Clip clip = AudioSystem.getClip();
 
-                clip.open(stream);
-                clip.start();
-                syncLatch.await();
+                    clip.addLineListener(e -> {
+                        if (e.getType() == LineEvent.Type.STOP) {
+                            syncLatch.countDown();
+                        }
+                    });
 
-                c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
-                m.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
-                Thread.sleep(2000);
-            } catch (Exception ex) {
-                Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    clip.open(stream);
+                    clip.start();
+                    syncLatch.await();
+
+                    c.startRecording("C:\\Users\\Scrip0\\Desktop\\Test", 2000L, 15);
+                    m.startRecording("C:\\Users\\Scrip0\\Desktop\\lol.mp3", 2000L);
+                    Thread.sleep(2000);
+                } catch (Exception ex) {
+                    Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             c.closeCam();
-        }
+        }).start();
     }
 
 
