@@ -32,8 +32,8 @@ public class MicUtil {
     private String soundFileName;
     private AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
     private int MONO = 1;
-    private AudioFormat format = new AudioFormat(
-            AudioFormat.Encoding.PCM_SIGNED, 16000, 16, MONO, 2, 16000, true);
+    private AudioFormat format = new AudioFormat(16000, 16, MONO, true, true);
+//            AudioFormat.Encoding.PCM_SIGNED, 16000, 16, MONO, 2, 16000, true);
     private TargetDataLine mike;
 
     private void startAudioRecording(Long length) {

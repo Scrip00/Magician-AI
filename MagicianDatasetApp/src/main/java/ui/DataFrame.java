@@ -342,7 +342,7 @@ public class DataFrame extends javax.swing.JFrame {
                         f.mkdirs();
                     }
 
-                    m.startRecording(path + "\\" + name + ".mp3", delay);
+                    m.startRecording(path + "\\" + name + ".wav", delay);
                     c.startRecording(path, delay, 15);
 
                     Thread.sleep(delay);
