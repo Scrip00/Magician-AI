@@ -72,8 +72,11 @@ public class CamUtil implements WebcamDiscoveryListener {
                 while (c <= frames) {
                     long timeBefore = System.currentTimeMillis();
                     Image image = cam.getImage();
+                    
+                    String num = String.valueOf(c);
+                    if (c < 10) num = "0" + num; 
 
-                    ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + c + ".png"));
+                    ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + num + ".png"));
 
                     long elapsed = System.currentTimeMillis() - timeBefore;
                     long delay = 1000 / fps - elapsed;
