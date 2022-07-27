@@ -8,32 +8,23 @@ package util;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamDiscoveryEvent;
 import com.github.sarxos.webcam.WebcamDiscoveryListener;
-import com.github.sarxos.webcam.WebcamPanel;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import ui.DataFrame;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameGrabber;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
+import static org.bytedeco.opencv.helper.opencv_imgcodecs.cvSaveImage;
+import org.bytedeco.opencv.opencv_core.IplImage;
 
 /**
  *
  * @author Scrip0
  */
 public class CamUtil implements WebcamDiscoveryListener {
-
-    private Thread camThread;
-
-    private int c;
-
-    private Webcam cam;
+    
+    FrameGrabber grabber = new OpenCVFrameGrabber(0);
 
     private boolean isCamAvailable = true;
 
@@ -42,6 +33,11 @@ public class CamUtil implements WebcamDiscoveryListener {
             System.out.println("Webcam detected: " + webcam.getName());
         }
         Webcam.addDiscoveryListener(this);
+        try {
+            grabber.start();
+        } catch (FrameGrabber.Exception ex) {
+            Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public boolean isCamAvailable() {
@@ -58,65 +54,36 @@ public class CamUtil implements WebcamDiscoveryListener {
         isCamAvailable = true;
     }
 
-    public void startRecording(String path, Long length, int fps) {
-        if (cam == null || !cam.isOpen()) {
-            cam = Webcam.getDefault();
-            cam.setViewSize(new Dimension(320, 240)); // 320x240 640x480 176x144
-            cam.open();
-        }
-
-        new Thread(() -> {
-            int c = 1;
-            int frames = (int) (length / (1000 / fps));
+    public void startRecording(String path, Long length, int fps) throws IOException {
+        int frames = (int) (length / (1000 / fps));
+        OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
+        for (int i = 1; i <= frames; i++) {
             try {
-                while (c <= frames) {
-                    long timeBefore = System.currentTimeMillis();
-                    Image image = cam.getImage();
-
-                    String num = String.valueOf(c);
-                    if (c < 10) {
-                        num = "0" + num;
-                    }
-
-                    new Thread(new Runnable() {
-                        private String myParam;
-
-                        public Runnable init(String myParam) {
-                            this.myParam = myParam;
-                            return this;
-                        }
-
-                        @Override
-                        public void run() {
-                            try {
-                                ImageIO.write((RenderedImage) image, "png", new File(path + "\\image_" + myParam + ".png"));
-                            } catch (IOException ex) {
-                                Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    }.init(num)).start();
-
-                    long elapsed = System.currentTimeMillis() - timeBefore;
-                    long delay = 1000 / fps - elapsed;
-                    if (delay < 0) {
-                        delay = 0;
-                    }
-                    Thread.sleep(delay);
-                    c++;
-                }
-            } catch (Exception ex) {
-                Logger.getLogger(DataFrame.class.getName()).log(Level.SEVERE, null, ex);
+                long elapsed = System.currentTimeMillis();
+                Frame frame = grabber.grab();
+                IplImage img = converter.convert(frame);
+                cvSaveImage(path + "\\image_" + i + ".png", img);
+                elapsed = System.currentTimeMillis() - elapsed;
+                long delay = 1000 / fps - elapsed;
+                if (delay < 0) delay = 0;
+                Thread.sleep(delay);
+            } catch (FrameGrabber.Exception ex) {
+                Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-        }).start();
+        }
     }
 
     public void closeCam() {
-        if (cam == null) {
-            cam = Webcam.getDefault();
-        }
-        if (cam.isOpen()) {
-            cam.close();
+        if (grabber != null) {
+            try {
+                grabber.stop();
+                grabber.release();
+                grabber.close();
+            } catch (FrameGrabber.Exception ex) {
+                Logger.getLogger(CamUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
