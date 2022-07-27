@@ -312,7 +312,7 @@ public class DataFrame extends javax.swing.JFrame {
                 try {
                     labelCard.setText(ranks_and_suits[i]);
                     CountDownLatch syncLatch = new CountDownLatch(1);
-                    AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks_and_suits[i] + ".wav"));
+                    AudioInputStream stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + "is it" + ".wav"));
                     Clip clip = AudioSystem.getClip();
 
                     clip.addLineListener(e -> {
@@ -320,6 +320,15 @@ public class DataFrame extends javax.swing.JFrame {
                             syncLatch.countDown();
                         }
                     });
+
+                    clip.open(stream);
+                    clip.start();
+                    syncLatch.await();
+                    
+                    clip.stop();
+                    clip.close();
+                    
+                    stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks_and_suits[i] + ".wav"));
 
                     clip.open(stream);
                     clip.start();
