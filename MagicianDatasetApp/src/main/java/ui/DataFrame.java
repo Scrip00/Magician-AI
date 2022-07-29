@@ -9,7 +9,6 @@ import util.CamUtil;
 import util.MicUtil;
 import java.awt.Color;
 import java.awt.HeadlessException;
-import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,8 +48,6 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
  * @author Scrip0
  */
 public class DataFrame extends javax.swing.JFrame {
-
-    private CamUtil c;
 
     /**
      * Creates new form DataFrame
@@ -234,11 +231,9 @@ public class DataFrame extends javax.swing.JFrame {
     }
 
     private void exit() {
-        if (c != null) {
-            c.closeCam();
-        }
-        System.exit(0);
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        CamUtil c = new CamUtil();
+        c.closeCam();
+        this.dispose();
     }
 
     public DataFrame(JButton btnStart, JLabel labelCam, JLabel labelMic, JPanel panelStart) throws HeadlessException {
@@ -280,7 +275,7 @@ public class DataFrame extends javax.swing.JFrame {
     }
 
     private boolean isCamAvailable() {
-        if (c == null) c = new CamUtil();
+        CamUtil c = new CamUtil();
         return c.isCamAvailable();
     }
 
@@ -308,7 +303,7 @@ public class DataFrame extends javax.swing.JFrame {
                 this.setContentPane(panelCard);
             });
 
-            if (c == null) c = new CamUtil();
+            CamUtil c = new CamUtil();
             MicUtil m = new MicUtil();
 
             String[] ranks_and_suits = new String[]{"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "jack", "queen", "king", "ace", "clubs", "diamonds", "hearts", "spades"};
@@ -329,10 +324,10 @@ public class DataFrame extends javax.swing.JFrame {
                     clip.open(stream);
                     clip.start();
                     syncLatch.await();
-
+                    
                     clip.stop();
                     clip.close();
-
+                    
                     stream = AudioSystem.getAudioInputStream(new File(System.getProperty("user.dir") + "\\src\\main\\java\\assets\\sounds\\" + ranks_and_suits[i] + ".wav"));
 
                     clip.open(stream);
